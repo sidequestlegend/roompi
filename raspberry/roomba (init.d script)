@@ -1,0 +1,37 @@
+#!/bin/bash
+# /etc/init.d/roomba
+
+### BEGIN INIT INFO
+# Provides:          roomba
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Example initscript
+# Description:       This service is used to manage a servo
+### END INIT INFO
+
+
+export PATH=$PATH:/usr/local/bin
+export NODE_PATH=$NODE_PATH:/usr/local/lib/node_modules
+export LD_LIBRARY_PATH=/home/pi/mjpg-streamer/mjpg-streamer-experimental/
+
+case "$1" in 
+    start)
+        echo "Starting roomba"
+#	/usr/local/bin/forever start /home/pi/streamServer/server.js
+	/usr/local/bin/forever start -c /usr/bin/python /home/pi/roomba/broadcast.py &
+        /usr/local/bin/forever start -c /usr/bin/python /home/pi/roomba/ws.py &
+	/home/pi/mjpg-streamer/mjpg-streamer-experimental/./mjpg_streamer -i "input_raspicam.so -fps 15" -o "output_http.so -w /home/pi/mjpg-streamer/mjpg-streamer-experimental/www/" &
+  ;;
+    stop)
+        echo "Stopping roomba"
+	/usr/local/bin/forever stopall
+        ;;
+    *)
+        echo "Usage: /etc/init.d/servod start|stop"
+        exit 1
+        ;;
+esac
+
+exit 0
